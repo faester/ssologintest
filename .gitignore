@@ -18,3 +18,4 @@ packages
 ~*.docx
 *.tmp
 net/PolitikenSSO.sln.ide/
+App_Data

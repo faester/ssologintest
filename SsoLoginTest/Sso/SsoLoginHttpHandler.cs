@@ -48,7 +48,7 @@ namespace SsoLoginTest.Sso
                 return;
             } else if (context.Request.Cookies["noautologin"] != null)
             {
-                CheckLogin();
+                CheckLogin(context);
                 context.Response.Cookies.Add(new HttpCookie("noautologin", "done"));
                 return;
             }
@@ -66,7 +66,7 @@ namespace SsoLoginTest.Sso
             request.RedirectToProvider();
         }
 
-        private void CheckLogin()
+        private void CheckLogin(HttpContext context)
         {
             var rp = new OpenIdRelyingParty();
             var response = rp.GetResponse();
@@ -77,6 +77,22 @@ namespace SsoLoginTest.Sso
             if (response.Status == AuthenticationStatus.Authenticated)
             {
                 FormsAuthentication.SetAuthCookie(response.ClaimedIdentifier, false);
+                var badQuerystringParametersr =
+                    context.Request.QueryString.AllKeys.Where(x => x.StartsWith("dnoa") || x.StartsWith("openid"))
+                        .ToList();
+
+                var querystring = HttpUtility.ParseQueryString(context.Request.Url.Query);
+
+                badQuerystringParametersr.ForEach(querystring.Remove);
+
+                // this gets the page path from root without QueryString
+                var pagePathWithoutQueryString = context.Request.Url.GetLeftPart(UriPartial.Path);
+
+                var redirTo =  querystring.Count > 0
+                    ? String.Format("{0}?{1}", pagePathWithoutQueryString, querystring)
+                    : pagePathWithoutQueryString;
+
+                context.Response.Redirect(redirTo, true);
             }
         }
 

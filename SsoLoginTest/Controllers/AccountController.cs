@@ -6,10 +6,8 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using DotNetOpenAuth.AspNet;
-using DotNetOpenAuth.Messaging;
-using DotNetOpenAuth.OpenId;
-using DotNetOpenAuth.OpenId.RelyingParty;
 using Microsoft.Web.WebPages.OAuth;
+using SsoLoginTest.Sso;
 using WebMatrix.WebData;
 using SsoLoginTest.Filters;
 using SsoLoginTest.Models;
@@ -26,34 +24,8 @@ namespace SsoLoginTest.Controllers
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
-            var rp = new DotNetOpenAuth.OpenId.RelyingParty.OpenIdRelyingParty();
-            var response = rp.GetResponse();
-
-            if (response != null)
-            {
-                return HandleLogin(response);
-            }
-            else
-            {
-                var request = rp.CreateRequest("http://polid.local");
-
-                request.Mode = AuthenticationRequestMode.Setup;
-
-                return request.RedirectingResponse.AsActionResult();
-            }
-        }
-
-        private ActionResult HandleLogin(IAuthenticationResponse response)
-        {
-            if (response.Status == AuthenticationStatus.Authenticated)
-            {
-                FormsAuthentication.SetAuthCookie(response.ClaimedIdentifier, false);
-                return Redirect("/");
-            }
-            else
-            {
-                throw new Exception("Unexpected status " + response.Status);
-            }
+            var login = new SsoLoginHandler();
+            return login.HandleLogin(returnUrl);
         }
 
         //

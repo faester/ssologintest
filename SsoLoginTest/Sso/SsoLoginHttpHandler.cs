@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
 using System.Web;
 using System.Web.Security;
-using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OpenId;
 using DotNetOpenAuth.OpenId.RelyingParty;
 
@@ -12,8 +9,17 @@ namespace SsoLoginTest.Sso
 {
     public class SsoLoginHttpHandler : IHttpHandler
     {
-        private string _ssoEndpoint;
-        private string _branding;
+        private readonly QueryStringSanitizer _queryStringSanitizer = new QueryStringSanitizer();
+        private readonly string _ssoEndpoint;
+        private readonly string _branding;
+
+        public SsoLoginHttpHandler(string branding, Uri ssoEndpoint)
+        {
+            if (branding == null) { throw new ArgumentNullException("branding"); }
+            if (ssoEndpoint == null) { throw new ArgumentNullException("ssoEndpoint"); }
+            _ssoEndpoint = ssoEndpoint.ToString();
+            _branding = branding;
+        }
 
         public SsoLoginHttpHandler()
         {
@@ -66,25 +72,10 @@ namespace SsoLoginTest.Sso
             if (response.Status == AuthenticationStatus.Authenticated)
             {
                 DoLogin(response);
-                var badQuerystringParametersr =
-                    context.Request.QueryString.AllKeys.Where(x => x.StartsWith("dnoa") || x.StartsWith("openid"))
-                        .ToList();
-
-                var querystring = HttpUtility.ParseQueryString(context.Request.Url.Query);
-
-                badQuerystringParametersr.ForEach(querystring.Remove);
-
-                // this gets the page path from root without QueryString
-                var pagePathWithoutQueryString = context.Request.Url.GetLeftPart(UriPartial.Path);
-
-                var redirTo =  querystring.Count > 0
-                    ? String.Format("{0}?{1}", pagePathWithoutQueryString, querystring)
-                    : pagePathWithoutQueryString;
-
+                var redirTo = _queryStringSanitizer.RemoveDotNetOpenAuthParametersFromQuerystring(context);
                 context.Response.Redirect(redirTo, true);
             }
         }
-
 
         /// <summary>
         /// Performs the actual login. Should/could use other approaches than 

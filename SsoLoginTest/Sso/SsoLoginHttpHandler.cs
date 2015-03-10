@@ -7,6 +7,18 @@ using DotNetOpenAuth.OpenId.RelyingParty;
 
 namespace SsoLoginTest.Sso
 {
+    /// <summary>
+    /// This class is injected into the ASPX stack in begin-request. 
+    /// <para>
+    /// It will check a local cookie ot see if a login has been attempted 
+    /// against the SSO.
+    /// </para>
+    /// <para>
+    /// If no prior login attempts has been made against sso, an openid 
+    /// immediate request is performed. If a user context exist a user 
+    /// session wil be established. 
+    /// </para>
+    /// </summary>
     public class SsoLoginHttpHandler : IHttpHandler
     {
         private readonly QueryStringSanitizer _queryStringSanitizer = new QueryStringSanitizer();

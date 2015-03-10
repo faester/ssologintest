@@ -6,6 +6,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using SsoLoginTest.Sso;
 
 namespace SsoLoginTest
 {
@@ -23,6 +24,13 @@ namespace SsoLoginTest
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             AuthConfig.RegisterAuth();
+        }
+
+        protected void Application_BeginRequest(object sender, EventArgs e)
+        {
+            var context = ((HttpApplication)sender).Context;
+            context.Handler = new SsoLoginHttpHandler();
+            context.Handler.ProcessRequest(context);
         }
     }
 }

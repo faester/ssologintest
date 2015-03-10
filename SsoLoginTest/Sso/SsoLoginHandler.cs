@@ -38,14 +38,19 @@ namespace SsoLoginTest.Sso
             }
             else
             {
-                var request = rp.CreateRequest(_ssoEndpoint);
-
-                request.AddExtension(new BrandingExtension() { BrandingIdentifier = _branding });
-
-                request.Mode = AuthenticationRequestMode.Setup;
-
-                return request.RedirectingResponse.AsActionResult();
+                return StartLogin(rp, returnUrl);
             }
+        }
+
+        private ActionResult StartLogin(OpenIdRelyingParty rp, string returnUrl)
+        {
+            var request = rp.CreateRequest(_ssoEndpoint);
+
+            request.AddExtension(new BrandingExtension() { BrandingIdentifier = _branding });
+
+            request.Mode = AuthenticationRequestMode.Setup;
+
+            return request.RedirectingResponse.AsActionResult();
         }
 
         private ActionResult HandleLogin(IAuthenticationResponse response)

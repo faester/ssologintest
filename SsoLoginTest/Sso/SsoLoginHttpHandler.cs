@@ -29,17 +29,6 @@ namespace SsoLoginTest.Sso
             }
         }
 
-        public void HandleLogin(string returnUrl)
-        {
-            var rp = new OpenIdRelyingParty();
-            var response = rp.GetResponse();
-
-            if (response != null)
-            {
-                FormsAuthentication.SetAuthCookie(response.ClaimedIdentifier, false);
-            }
-        }
-
         public void ProcessRequest(HttpContext context)
         {
             if (context.Request.Cookies["noautologin"] != null 
@@ -76,7 +65,7 @@ namespace SsoLoginTest.Sso
             }
             if (response.Status == AuthenticationStatus.Authenticated)
             {
-                FormsAuthentication.SetAuthCookie(response.ClaimedIdentifier, false);
+                DoLogin(response);
                 var badQuerystringParametersr =
                     context.Request.QueryString.AllKeys.Where(x => x.StartsWith("dnoa") || x.StartsWith("openid"))
                         .ToList();
@@ -94,6 +83,17 @@ namespace SsoLoginTest.Sso
 
                 context.Response.Redirect(redirTo, true);
             }
+        }
+
+
+        /// <summary>
+        /// Performs the actual login. Should/could use other approaches than 
+        /// FormsAuthentication.
+        /// </summary>
+        /// <param name="response"></param>
+        protected virtual void DoLogin(IAuthenticationResponse response)
+        {
+            FormsAuthentication.SetAuthCookie(response.ClaimedIdentifier, false);
         }
 
         public bool IsReusable { get { return true; } }

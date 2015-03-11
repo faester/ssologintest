@@ -49,28 +49,39 @@ namespace SsoLoginTest.Sso
 
         public void ProcessRequest(HttpContext context)
         {
-            if (context.Request.Cookies["noautologin"] != null 
-                && context.Request.Cookies["noautologin"].Value == "done")
+            //if (context.Request.Cookies["noautologin"] != null 
+            //    && context.Request.Cookies["noautologin"].Value == "done")
+            //{
+            //    return;
+            //} else if (context.Request.Cookies["noautologin"] != null)
+            //{
+            //    CheckLogin(context);
+            //    context.Response.Cookies.Add(new HttpCookie("noautologin", "done"));
+            //    return;
+            //}
+
+            if (context.Request.Cookies["noautologin"] == null)
             {
-                return;
-            } else if (context.Request.Cookies["noautologin"] != null)
+                // Cookie does not exist, so prepare the request, set the cookie and redirect to provider
+
+                var rp = new OpenIdRelyingParty();
+
+                var request = rp.CreateRequest(_ssoEndpoint);
+
+                request.AddExtension(new BrandingExtension() { BrandingIdentifier = _branding });
+
+                request.Mode = AuthenticationRequestMode.Immediate;
+
+                context.Response.Cookies.Add(new HttpCookie("noautologin", "active"));
+
+                request.RedirectToProvider();
+            }
+            else if (context.Request.Cookies["noautologin"].Value != "done")
             {
+                // Implied that if cookie value == "done" then nothing happens
                 CheckLogin(context);
                 context.Response.Cookies.Add(new HttpCookie("noautologin", "done"));
-                return;
             }
-
-            var rp = new OpenIdRelyingParty();
-
-            var request = rp.CreateRequest(_ssoEndpoint);
-
-            request.AddExtension(new BrandingExtension() { BrandingIdentifier = _branding });
-
-            request.Mode = AuthenticationRequestMode.Immediate;
-
-            context.Response.Cookies.Add(new HttpCookie("noautologin", "active"));
-
-            request.RedirectToProvider();
         }
 
         private void CheckLogin(HttpContext context)

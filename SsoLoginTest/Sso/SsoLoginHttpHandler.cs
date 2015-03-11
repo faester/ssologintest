@@ -49,17 +49,6 @@ namespace SsoLoginTest.Sso
 
         public void ProcessRequest(HttpContext context)
         {
-            //if (context.Request.Cookies["noautologin"] != null 
-            //    && context.Request.Cookies["noautologin"].Value == "done")
-            //{
-            //    return;
-            //} else if (context.Request.Cookies["noautologin"] != null)
-            //{
-            //    CheckLogin(context);
-            //    context.Response.Cookies.Add(new HttpCookie("noautologin", "done"));
-            //    return;
-            //}
-
             if (context.Request.Cookies["noautologin"] == null)
             {
                 // Cookie does not exist, so prepare the request, set the cookie and redirect to provider

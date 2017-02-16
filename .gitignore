@@ -1,4 +1,6 @@
 _ReSharper
+mscorlib.pdb
+pingme.txt
 .vs
 *~
 /obj/

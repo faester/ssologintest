@@ -4,6 +4,7 @@ using System.Web;
 using System.Web.Security;
 using DotNetOpenAuth.OpenId;
 using DotNetOpenAuth.OpenId.RelyingParty;
+using JpPolitikensHus.UserServiceProxyNetCore;
 
 namespace SsoLoginTest.Sso
 {
@@ -77,28 +78,14 @@ namespace SsoLoginTest.Sso
         {
             var rp = new OpenIdRelyingParty();
             var response = rp.GetResponse();
-            if (response == null)
+            if (response?.Status == AuthenticationStatus.Authenticated)
             {
-                return;
-            }
-            if (response.Status == AuthenticationStatus.Authenticated)
-            {
-                DoLogin(response);
+                SsoLoginHandler.PerformLogin(response);
                 var redirTo = _queryStringSanitizer.RemoveDotNetOpenAuthParametersFromQuerystring(context);
                 context.Response.Redirect(redirTo, true);
             }
         }
-
-        /// <summary>
-        /// Performs the actual login. Should/could use other approaches than 
-        /// FormsAuthentication.
-        /// </summary>
-        /// <param name="response"></param>
-        protected virtual void DoLogin(IAuthenticationResponse response)
-        {
-            FormsAuthentication.SetAuthCookie(response.ClaimedIdentifier, false);
-        }
-
+        
         public bool IsReusable { get { return true; } }
     }
 }

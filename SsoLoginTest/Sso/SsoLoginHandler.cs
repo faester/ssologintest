@@ -71,25 +71,34 @@ namespace SsoLoginTest.Sso
         {
             if (response.Status == AuthenticationStatus.Authenticated)
             {
-                var userUri = new Uri(response.ClaimedIdentifier);
-                var userId = Guid.Parse(userUri.LocalPath.Left(36));
-                var userServiceClient = UserServiceClientFactory
-                    .StartBuilding()
-                    .WithApplicationCredentials(
-                    Guid.Parse(ConfigurationManager.AppSettings["userservice:appid"]),
-                    ConfigurationManager.AppSettings["userservice:appkey"])
-                    .WithEndpoint(new Uri(ConfigurationManager.AppSettings["userservice:endpoint"]))
-                    .BuildClient();
-
-                var user = userServiceClient.Get(userId);
-
-                FormsAuthentication.SetAuthCookie(user.GetUsername(), false);
+                PerformLogin(response);
                 return new RedirectResult("/");
             }
             else
             {
                 throw new Exception("Unexpected status " + response.Status);
             }
+        }
+
+        internal static void PerformLogin(IAuthenticationResponse response)
+        {
+            if (response.Status != AuthenticationStatus.Authenticated)
+            {
+                throw new ArgumentException("Not a valid login!");
+            }
+            var userUri = new Uri(response.ClaimedIdentifier);
+            var userId = Guid.Parse(userUri.LocalPath.Left(36));
+            var userServiceClient = UserServiceClientFactory
+                .StartBuilding()
+                .WithApplicationCredentials(
+                    Guid.Parse(ConfigurationManager.AppSettings["userservice:appid"]),
+                    ConfigurationManager.AppSettings["userservice:appkey"])
+                .WithEndpoint(new Uri(ConfigurationManager.AppSettings["userservice:endpoint"]))
+                .BuildClient();
+
+            var user = userServiceClient.Get(userId);
+
+            FormsAuthentication.SetAuthCookie(user.GetUsername(), false);
         }
 
         public void ResetAutoLogin()

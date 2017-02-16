@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using DotNetOpenAuth.Messaging;
@@ -64,6 +65,11 @@ namespace SsoLoginTest.Sso
             {
                 throw new Exception("Unexpected status " + response.Status);
             }
+        }
+
+        public void ResetAutoLogin()
+        {
+            HttpContext.Current.Response.Cookies.Set(new HttpCookie("noautologin", null));
         }
     }
 }

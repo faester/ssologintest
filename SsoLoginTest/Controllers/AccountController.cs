@@ -2,20 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Transactions;
-using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using DotNetOpenAuth.AspNet;
 using Microsoft.Web.WebPages.OAuth;
 using SsoLoginTest.Sso;
 using WebMatrix.WebData;
-using SsoLoginTest.Filters;
 using SsoLoginTest.Models;
 
 namespace SsoLoginTest.Controllers
 {
     [Authorize]
-    [InitializeSimpleMembership]
     public class AccountController : Controller
     {
         //
@@ -53,15 +50,20 @@ namespace SsoLoginTest.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
+            FormsAuthentication.SignOut();
 
-            WebSecurity.Logout();
+            return RedirectToAction("Index", "Home");
+        }
 
+        public ActionResult ResetAutoLogin()
+        {
+             var ssoLoginHandler = new SsoLoginHandler();
+            ssoLoginHandler.ResetAutoLogin();
             return RedirectToAction("Index", "Home");
         }
 
         //
         // GET: /Account/Register
-
         [AllowAnonymous]
         public ActionResult Register()
         {

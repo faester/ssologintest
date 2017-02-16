@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.Title = "Medielogin login example";
+}
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@ViewBag.Title.</h1>
+                <h2>@ViewBag.Message</h2>
+            </hgroup>
+            <p>
+                Use this page to set and observe how session cookies are handled. 
+            </p>
+        </div>
+    </section>
+}
+<h3>It has the following purposes:</h3>
+<ol class="round">
+    <li class="one">
+        <h5>You can create a session cookie here.</h5>
+        @using (Html.BeginForm())
+        {
+            <input type="submit" value="Create session cookie" />
+        }
+    </li>
+</ol>

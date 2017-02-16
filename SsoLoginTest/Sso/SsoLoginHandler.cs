@@ -6,9 +6,22 @@ using System.Web.Security;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OpenId;
 using DotNetOpenAuth.OpenId.RelyingParty;
+using JpPolitikensHus.UserServiceProxyNetCore;
 
 namespace SsoLoginTest.Sso
 {
+    public static class StringExtensions
+    {
+        public static string Left(this string inputString, int characters)
+        {
+            var length = inputString.Length;
+            if (length < characters)
+            {
+                throw new ArgumentException($"Requested leftmost {characters} og string with length {length}. Can't do: Substring length should be smaller than string length.");
+            }
+            return inputString.Substring(length - characters, characters);
+        }
+    }
     class SsoLoginHandler
     {
         private readonly string _ssoEndpoint;
@@ -58,7 +71,19 @@ namespace SsoLoginTest.Sso
         {
             if (response.Status == AuthenticationStatus.Authenticated)
             {
-                FormsAuthentication.SetAuthCookie(response.ClaimedIdentifier, false);
+                var userUri = new Uri(response.ClaimedIdentifier);
+                var userId = Guid.Parse(userUri.LocalPath.Left(36));
+                var userServiceClient = UserServiceClientFactory
+                    .StartBuilding()
+                    .WithApplicationCredentials(
+                    Guid.Parse(ConfigurationManager.AppSettings["userservice:appid"]),
+                    ConfigurationManager.AppSettings["userservice:appkey"])
+                    .WithEndpoint(new Uri(ConfigurationManager.AppSettings["userservice:endpoint"]))
+                    .BuildClient();
+
+                var user = userServiceClient.Get(userId);
+
+                FormsAuthentication.SetAuthCookie(user.GetUsername(), false);
                 return new RedirectResult("/");
             }
             else
